@@ -1,0 +1,18 @@
+{
+  "name": "spider",
+  "version": "1.1.0",
+  "description": "spider",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "async": "^2.0.0-rc.6",
+    "cheerio": "^0.18.0",
+    "ejs": "^2.2.4",
+    "iconv-lite": "^0.4.6",
+    "mkdirp": "^0.5.0",
+    "request": "^2.51.0",
+    "ws": "^0.7.1"
+  }
+}

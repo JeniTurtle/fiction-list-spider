@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>在线小说榜单抓取工具</title>
+    <script src="/js/jquery-1.11.1.min.js"></script>
+    <link href="../css/amazeui.min.css" rel="stylesheet" />
+    <link href="../css/ui-dialog.css" rel="stylesheet" />
+    <script src="../js/dialog-plus-min.js"></script>
+    <script src="../js/knockout-3.3.0.debug.js"></script>
+    <link href="/css/style.css" rel="stylesheet" type="text/css" />
+    <script>
+        var port = '<%=wsport%>';
+    </script>
+    <script src="../js/main.js"></script>
+</head>
+<body>
+<div class="wrap transition" id="Wrap">
+    <div class="nc-header">
+        <div class="am-g">
+            <div class="am-u-sm-8 am-u-sm-centered">
+                在线小说榜单抓取工具
+            </div>
+        </div>
+    </div>
+
+    <section class="list-config am-g">
+        <div class="am-u-sm-8 am-u-sm-centered">
+            <h4>已有配置：</h4>
+            <ul class="am-list am-list-static" id="ConfigList">
+                <% list.forEach(function(element,index){ %>
+                <li><span><%=element%></span><div class="nc-item-btns" data-name="<%=element%>"><button class="am-btn am-btn-xs am-btn-success" tag="start">爬取</button><button class="am-btn am-btn-xs am-btn-primary" tag="edit">修改</button><button class="am-btn am-btn-xs am-btn-warning" tag="remove">删除</button></div></li>
+                <% }) %>
+            </ul>
+            <div><button class="am-btn am-btn-primary" id="AddBtn">新增配置</button></div>
+        </div>
+    </section>
+
+</div>
+
+<ul id="LogList" class="am-list log-list"></ul>
+
+<footer class="am-text-center footer-bar transition" id="FooterBar">
+    <a href="javascript:;" class="am-btn am-btn-primary am-btn-xs">正在爬取【<b></b>】中... 点击可停止程序</a>
+</footer>
+
+<script type="text/html" id="AddTpl"></script>
+
+<div style="display: none">
+    <div id="dialogHtml">
+        <div class="am-input-group am-input-group-sm margin-tb-5">
+            <span class="am-input-group-label">配置名称</span>
+            <input type="text" class="am-form-field form-data-config-name" data-tip="给你的配置取个名字">
+        </div>
+        <div class="am-input-group am-input-group-sm margin-tb-5">
+            <span class="am-input-group-label">页面URL</span>
+            <input type="text" class="am-form-field form-data-url" data-tip="抓取的入口页面（即1级页面），如果是分页，请使用%%替代页面，<br>如：http://xxx.com?page=%%或http://xxx.com/list/12-10-%%.html">
+        </div>
+        <div class="am-input-group am-input-group-sm margin-tb-5">
+            <span class="am-input-group-label">编码方式</span>
+            <input type="text" class="am-form-field form-data-charset" placeholder="默认utf8" data-tip="具体需参考网站的meta中charset参数，常用值：utf8、gbk、gb2312">
+        </div>
+        <div class="am-input-group am-input-group-sm margin-tb-5">
+            <span class="am-input-group-label">网址类型</span>
+                    <span class="am-form-field">
+                        <label class="am-radio-inline">
+                            <input type="radio" value="1" name="page" class="form-data-isPagination"> 分页
+                        </label>
+                        <label class="am-radio-inline">
+                            <input type="radio" value="0" name="page" class="form-data-isPagination"> 单页
+                        </label>
+                        <label class="am-radio-inline page-limit" style="display: none">
+                            从第
+                            <input type="text" class="input-text am-text-center form-data-page-from" style="width:50px" />
+                            页 到 第
+                            <input type="text" class="input-text am-text-center form-data-page-to" style="width:50px" />
+                            页
+                        </label>
+                    </span>
+        </div>
+        <ul class="am-list config-add" data-bind="">
+
+        </ul>
+    </div>
+</div>
+
+<div id="selectorTpl" style="display: none">
+    <li>
+        <span class="ca-level"></span>
+
+        <div class="am-g url-field">
+            <div class="am-u-sm-6" style="padding-left: 0;">
+                <div class="am-input-group am-input-group-sm">
+                    <span class="am-input-group-label">url字段</span>
+                    <input type="text" name="urlField" class="am-form-field form-data-url-field" placeholder="填写上级页面抓取到的url字段" data-tip="务必在上级抓取页面中设置当前url的选择器">
+                </div>
+            </div>
+            <button class="am-btn am-btn-danger am-btn-sm removePageLevel">删除</button>
+        </div>
+
+        <div class="am-g">
+            <div class="am-u-sm-6" style="padding-left: 0;">
+                <div class="am-input-group am-input-group-sm">
+                    <span class="am-input-group-label">根节点选择器</span>
+                    <input type="text" name="rootSelector" class="am-form-field form-data-root-selector" placeholder="默认为空" data-tip="如果页面中抓取的内容为多个重复元素,请设置每个重复元素的根节点">
+                </div>
+            </div>
+            <button class="addContentSelector am-btn am-btn-success am-btn-sm" style="border-radius: 3px;">增加内容选择器</button>
+        </div>
+
+        <div class="contentSelectors">
+
+        </div>
+    </li>
+</div>
+
+<div id="selectorTpl1" style="display: none">
+    <div class="am-g">
+        <div class="am-u-sm-2" style="padding-left: 0;">
+            <div class="am-input-group am-input-group-sm">
+                <span class="am-input-group-label">字段名</span>
+                <input type="text" class="am-form-field fieldName form-data-selector-field" placeholder="只允许英文字母" data-tip="自定义的保存字段名">
+            </div>
+        </div>
+        <div class="am-u-sm-4 selector-type" style="padding-left: 0">
+            <div class="am-input-group am-input-group-sm">
+                <span class="am-input-group-label">类型</span>
+                <span class="am-form-field">
+                    <label class="am-radio-inline">
+                        <input type="radio" class="checkedText noAttr form-data-selector-type" checked="true" value="text"> 文本
+                    </label>
+                    <label class="am-radio-inline">
+                        <input type="radio" class="checkedHtml noAttr form-data-selector-type" value="html"> html
+                    </label>
+                    <label class="am-radio-inline">
+                        <input type="radio" value="attr" class="checkedAttr form-data-selector-type"> 属性
+                    </label>
+                    <label class="am-radio-inline" style="margin: 0;padding-left: 6px;">
+                        <input type="checkbox" value="1" class="regexp-option"> 正则表达式
+                    </label>
+                </span>
+            </div>
+        </div>
+        <div class="am-u-sm-2" style="padding-left: 0;">
+            <div class="am-input-group am-input-group-sm">
+                <span class="am-input-group-label">选择器</span>
+                <input type="text" class="am-form-field selectorName form-data-selector-name" placeholder="css选择器" data-tip="需要抓取内容的css选择器">
+            </div>
+        </div>
+        <div class="am-u-sm-2 attr-name" style="padding-left: 0;display: none">
+            <div class="am-input-group am-input-group-sm">
+                <span class="am-input-group-label">属性名</span>
+                <input type="text" class="am-form-field attrName form-data-selector-attr" placeholder="元素属性名" data-tip="需要抓取的元素属性名">
+            </div>
+        </div>
+        <div class="am-u-sm-2 regexp-box" style="padding-left: 0;display: none">
+            <div class="am-input-group am-input-group-sm">
+                <span class="am-input-group-label">正则</span>
+                <input type="text" class="am-form-field form-data-selector-regexp" placeholder="正则表达式" data-tip="使用正则表达式匹配字段中需要的内容">
+            </div>
+        </div>
+        <div class="am-u-sm-0"></div>
+        <button class="am-btn am-btn-danger am-btn-sm removeContentSelector">删除</button>
+    </div>
+</div>
+
+</body>
+</html>
