@@ -40,7 +40,7 @@ var appendHTML = function() {
         $(this).parent().next().append($elem);
 
         $newElement.find(".removeContentSelector").on('click', function() {
-            $(this).parent().parent().remove();
+            $(this).parent().remove();
         })
 
         $newElement.find(".checkedAttr").on('change', function() {
